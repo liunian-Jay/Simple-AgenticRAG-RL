@@ -69,7 +69,7 @@ def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q, temperature=0.9):
         if not batch_inputs:
             break
 
-        sampling_params = SamplingParams(n=1, temperature=temperature, max_tokens=1024, stop=["</search>"], skip_special_tokens=False)
+        sampling_params = SamplingParams(n=1, temperature=temperature, max_tokens=4096, stop=["</search>"], skip_special_tokens=False)
         outputs_list = vllm_gen.generate(batch_inputs, sampling_params, use_tqdm=False)
 
         for k, outputs in enumerate(outputs_list):
@@ -91,7 +91,7 @@ def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q, temperature=0.9):
                 m = re.search(r'<search>(.*?)</search>', text, re.DOTALL)
                 if m:
                     query_str = m.group(1).strip()
-                    doc = retrieve(query_str, 1) # 检索doc
+                    doc = retrieve(query_str, 5) # 检索doc
                     doc = f"<information>{doc.strip()}</information>"
                     generations[i][j] += doc
                     all_answers[i][j] += doc

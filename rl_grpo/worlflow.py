@@ -14,7 +14,7 @@ def load_data(data_path):
     return QAs
 
 def main(model_path, data_path):
-    gen = LLM(model= model_path, gpu_memory_utilization=0.85, max_model_len=1024)
+    gen = LLM(model= model_path, gpu_memory_utilization=0.85, max_model_len=4096)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
 
     QAs = load_data(data_path)
@@ -22,6 +22,7 @@ def main(model_path, data_path):
 
     em,f1 = 0,0
     searches = 0
+    failure = 0
     for item, res_answer in zip(QAs, answers):
         pattern = r"<search>(.*?)</search>"
         match = re.search(pattern, res_answer)
@@ -32,12 +33,14 @@ def main(model_path, data_path):
         match = re.search(pattern, res_answer)
         if match:
             res_answer = match.group(1).strip()
+        else:
+            failure += 1
         em += em_max_over_ground_truths(res_answer, item['answers'])
         f1 += f1_max_over_ground_truths(res_answer, item['answers'])
-    print('EM:',em/len(QAs)*100, ' F1:', f1/len(QAs)*100, ' Searches:', searches)
+    print('EM:',em/len(QAs)*100, ' F1:', f1/len(QAs)*100, ' Searches:', searches, ' Failure:', failure)
 
 
 if __name__ == '__main__':
-    model_path = '/home/share/models/Qwen2.5-3B-Instruct'
+    model_path = '/home/share/models/Qwen2.5-7B-Instruct'
     data_path = '/home/yjiang/myWork/Simple-AgenticRAG-RL/data/eval/HotpotQA.jsonl'
     main(model_path, data_path)
