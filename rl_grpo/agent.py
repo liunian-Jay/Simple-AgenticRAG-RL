@@ -3,6 +3,7 @@ from vllm import LLM, SamplingParams
 os.environ['TOKENIZERS_PARALLELISM'] = 'true'
 
 def retrieve(query, topk=1):
+    """ 调用搜索API """
     # return '小明的真实性名叫杨明'
     while True:
         try:
@@ -25,6 +26,7 @@ def retrieve(query, topk=1):
             print(f"Request error: {e}, retrying...")
         time.sleep(1)  # 间隔1秒再试
 
+
 def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q):
     system_prompt = "You are a helpful assistant. "
     answer_prompt = """
@@ -41,11 +43,11 @@ def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q):
     queries = [item["Q"] for item in inputs]
     prompts = [build_prompt(query) for query in queries]
 
-    # 多采样，每个prompt要采样 num_pre_Q 个
-    n = num_pre_Q
-    max_loops = 3
+    # 超参数
+    n = num_pre_Q # 多采样，每个prompt要采样 num_pre_Q 个
+    max_loops = 3 # 每个query最多搜索几次
 
-    # 存储每条采样的token和mask（与生成同步）
+    # 存储每条采样的token和mask
     generations = [ [p] * n for p in prompts ] 
     finished = [ [False] * n for _ in prompts ]
     search_cnt = [ [0] * n for _ in prompts ]
@@ -74,20 +76,19 @@ def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q):
             text = outputs.outputs[0].text
             i, j = mapping[k]
 
-            # 前面停止词
+            # 前面停止词输出时候总是忽略,手动添加上
             if outputs.outputs[0].finish_reason == "stop" and outputs.outputs[0].stop_reason == '</search>':
                 text += '</search>'
 
-            # 增量生成的部分
+            # 存储增量生成的部分
             generations[i][j] += text
             all_answers[i][j] += text
             new_ids = tokenizer(text, return_tensors="pt", add_special_tokens=False)["input_ids"].squeeze(0).tolist()
             all_token_ids[i][j] += new_ids
             all_token_masks[i][j] += [1]*len(new_ids)  
 
-            if '</search>' in text:
-                # 找到<query>片段，插入doc再继续生成
-                m = re.search(r'<search>(.*?)</search>', text, re.DOTALL)# 用正则或分割提取<search>xxx</search>
+            if '</search>' in text: # 找到<search>片段，插入doc再继续生成
+                m = re.search(r'<search>(.*?)</search>', text, re.DOTALL)
                 if m:
                     query_str = m.group(1).strip()
                     doc = retrieve(query_str, 1) # 检索doc
@@ -99,51 +100,10 @@ def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q):
                     all_token_masks[i][j] += [0]*len(new_ids)
                     search_cnt[i][j] += 1
             else:
-                finished[i][j] = True # stop但是无query，是直接生成完毕的情况
+                finished[i][j] = True #直接生成完的情况: stop但是无query
     
     # 扁平化结果，保持原顺序
     answers = [ans for group in all_answers for ans in group]
     ans_token_ids = [token_ids for group in all_token_ids for token_ids in group]
     ans_masks = [token_masks for group in all_token_masks for token_masks in group]
     return prompts * n, answers, ans_token_ids, ans_masks
-
-
-
-
-
-# from transformers import AutoTokenizer
-# # model_path = '/home/share/models/Qwen2.5-3B-Instruct'
-# model_path = '/home/yjiang/myWork/Simple-AgenticRAG-RL/rl_grpo/step_200'
-# gen = LLM(model= model_path, gpu_memory_utilization=0.85, max_model_len=1024)
-# tokenizer = AutoTokenizer.from_pretrained(model_path)
-# # QAs = [
-# #     {'Q':'what is python', 'A':'xx'},
-# #     {'Q':'what is English', 'A':'xx'},
-# # ]
-# def load_data(data_path='/home/yjiang/myWork/Simple-AgenticRAG-RL/data/hotpot_5k.jsonl'):
-#     with open(data_path, 'r') as f:
-#         QAs = [json.loads(line) for line in f]
-#     return QAs
-# QAs = random.sample(load_data(),3)
-# _, answers, ans_token_ids ,ans_masks = gen_sample(gen,tokenizer, QAs, 8)
-
-# import torch
-# from torch.nn.utils.rnn import pad_sequence
-# tensor_ans_ids = [torch.tensor(ans_ids) for ans_ids in ans_token_ids]
-# output_ids = pad_sequence(tensor_ans_ids, batch_first=True, padding_value=tokenizer.pad_token_id)
-# tensor_ans_masks = [torch.tensor(masks) for masks in ans_masks]
-# mask_ids = pad_sequence(tensor_ans_masks, batch_first=True, padding_value=0)
-
-# print(output_ids.shape)
-# print(mask_ids.shape)
-
-# for i in range(len(ans_masks)):
-#     print(answers[i])
-#     print('-'*100)
-#     for idx, mask_val in enumerate(ans_masks[i]):
-#         if mask_val == 0:
-#             token_id = ans_token_ids[i][idx]
-#             token_str = tokenizer.decode([token_id])
-#             print(f"{token_str}", end='')
-#     print('')
-#     print('x'*100)

@@ -44,7 +44,6 @@ def create_app(raw_queue, result_queue):
             'doc_masks': bytes_to_tensor(data_list[3])
         }
         if len(data_list) == 5:
-            # print('解析到了gen_logps')
             data['gen_logps'] = bytes_to_tensor(data_list[4])
         raw_queue.put(data)
         return b"ok"
@@ -84,7 +83,7 @@ def process_loop(ref_model, raw_queue, result_queue):
 
 def main():
     os.environ['TOKENIZERS_PARALLELISM'] = 'true'
-    model_path = "/home/share/models/Qwen2.5-1.5B-Instruct"
+    model_path = "/home/share/models/Qwen2.5-3B-Instruct"
 
     print("Loading model...")
     ref_model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.bfloat16, _attn_implementation="sdpa").to('cuda')

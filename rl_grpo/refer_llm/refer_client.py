@@ -13,7 +13,6 @@ class RefClient:
         """数据编码与打包，发送请求"""
         data = [json.dumps({"prompt_len": prompt_len}).encode(), tensor_to_bytes(merged_ids), tensor_to_bytes(rewards), tensor_to_bytes(doc_masks)]
         if gen_logps is not None:
-            # print('上传gen_logps')
             data.append(tensor_to_bytes(gen_logps))
         xdata = make_bytes_list(data)
         r = requests.post(f"{self.server_url}/upload", data=xdata)
@@ -37,7 +36,6 @@ class RefClient:
         data['doc_masks'] = bytes_to_tensor(res[3])
         data['refs'] = bytes_to_tensor(res[4])
         if len(res) == 6:
-            # print('存在gen_logps')
             data['gen_logps'] = bytes_to_tensor(res[5])
         return data
 
@@ -45,9 +43,7 @@ class RefClient:
 数据传输格式:
  - tensor 请求格式：
     [ 
-        {
-            "prompt_len": prompt_len
-        },
+        { "prompt_len": prompt_len },
         merged_ids, 
         rewards,
         doc_masks,
@@ -55,9 +51,7 @@ class RefClient:
     ]
  - tensor 回复格式：
     [ 
-        {
-            "prompt_len": prompt_len
-        },
+        { "prompt_len": prompt_len },
         merged_ids, 
         rewards,
         doc_masks,
