@@ -1,7 +1,9 @@
 import random
-from transformers import AutoTokenizer
+import os, random, re, requests, time, json
 import torch
 from torch.nn.utils.rnn import pad_sequence
+from vllm import LLM, SamplingParams
+from transformers import AutoTokenizer
 
 from agent import gen_sample
 

@@ -6,7 +6,7 @@
 
 💡 This project aims to provide a minimal implementation of Agentic RAG using reinforcement learning (especially GRPO), and to provide Agentic RAG researchers with a more flexible base project to try and improve.   
 
-💪 The project has just built a demo and is being improved. If you are interested, feel free to participate and improve it.  
+💪 The project is in early development and evolving. If you're interested, feel free to participate and contribute.  
 
 <!-- <div align="center">
 <img src="images/framework.png" alt="framework" width="800">liang
@@ -46,9 +46,14 @@ rm lucene-index.wikipedia-dpr-100w.20210120.d1b9e6.tar.gz
 
 
 ## 🎯 Training
+...
 
+## 📃 Case
+<div align="center">
+<img src="images/case.png" alt="framework" width="800">
 
-
+**AgenticRAG Framework** (Not perfect, but full of potential.)
+</div>
 
 ## 📈 Run Evaluation
 <details>
@@ -66,11 +71,8 @@ Download Evaluation Data:
 - Integration of other search engines
 
 ## Acknowledge
-The project is inspired by [simple_GRPO](https://github.com/lsdefine/simple_GRPO) and [Search-R1](https://github.com/PeterGriffinJin/Search-R1). We sincerely appreciate the efforts of these teams for their contributions to open-source research and development.
+The project is inspired by [simple_GRPO](https://github.com/lsdefine/simple_GRPO) and [Search-R1](https://github.com/PeterGriffinJin/Search-R1). Thanks for their contributions to open-source research and development.
 
-
-
-Thanks for your interest in our work!
 
 
 
