@@ -130,7 +130,7 @@ def gen_worker(gen_Queue, train_config):
             return
         except Exception as e:
             print(f"\033[31m{e}\033[0m")
-            print('[VLLM PROC] no new model')
+            print('\033[32m[VLLM PROC] no new model!\033[0m')
             return
 
     # 初始化环境
@@ -149,13 +149,14 @@ def gen_worker(gen_Queue, train_config):
     for it in range(999999999):
         if it % 3 == 0: 
             try_update_model()
-        # 准备数据
+        # 准备数据,并采样回复
         inputs = random.sample(QAs, train_config.Q_batch_size)
-        # 采样回复
         tic = time.time()
         prompts, answers, ans_token_ids, ans_masks = gen_sample(vllm_gen, tokenizer, inputs, train_config.num_pre_Q)
         rewards = get_reward(inputs, answers, train_config.num_pre_Q)
+        mean_reward = rewards.mean().item()
         print(f'time: {time.time()-tic:.2f}s    ', 'rewards:', rewards)
+        print(f'\033[36mMean reward: {mean_reward}\033[0m')
         if it % 5 == 0: 
             print('answers:', answers[rewards.argmax().item()])
     

@@ -172,4 +172,5 @@ cython_debug/
 
 
 data/eval
-test*.py
+rl_grpo/step_*
+**/test*.py

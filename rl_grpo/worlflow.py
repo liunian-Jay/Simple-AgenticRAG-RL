@@ -41,6 +41,6 @@ def main(model_path, data_path):
 
 
 if __name__ == '__main__':
-    model_path = '/home/share/models/Qwen2.5-7B-Instruct'
+    model_path = '/home/share/models/Qwen2.5-1.5B-Instruct'
     data_path = '/home/yjiang/myWork/Simple-AgenticRAG-RL/data/eval/HotpotQA.jsonl'
     main(model_path, data_path)
