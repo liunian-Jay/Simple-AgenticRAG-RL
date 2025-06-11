@@ -27,7 +27,7 @@ def retrieve(query, topk=1):
         time.sleep(1)  # 间隔1秒再试
 
 
-def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q):
+def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q, temperature=0.9):
     system_prompt = "You are a helpful assistant. "
     answer_prompt = """
     Answer the given question. You must conduct reasoning inside <think> and </think> first every time you get new information. 
@@ -69,7 +69,7 @@ def gen_sample(vllm_gen, tokenizer, inputs, num_pre_Q):
         if not batch_inputs:
             break
 
-        sampling_params = SamplingParams(n=1, temperature=0.9, max_tokens=1024,stop=["</search>"], skip_special_tokens=False)
+        sampling_params = SamplingParams(n=1, temperature=temperature, max_tokens=1024, stop=["</search>"], skip_special_tokens=False)
         outputs_list = vllm_gen.generate(batch_inputs, sampling_params, use_tqdm=False)
 
         for k, outputs in enumerate(outputs_list):
